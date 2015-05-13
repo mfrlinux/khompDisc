@@ -1,30 +1,5 @@
-/*ksigInactive        = 0,
-  ksigR2Digital       = 1,
-  ksigContinuousEM    = 2,
-  ksigPulsedEM        = 3,
-  ksigUserR2Digital   = 4,
-  ksigAnalog          = 5,
-  ksigOpenCAS         = 6,
-  ksigOpenR2          = 7,
-  ksigSIP             = 8,
-  ksigOpenCCS         = 9,
-  ksigPRI_EndPoint    = 10,
-  ksigAnalogTerminal  = 11,
-  ksigPRI_Network     = 12,
-  ksigPRI_Passive     = 13,
-  ksigLineSide        = 14,
-  ksigCAS_EL7         = 15,
-  ksigGSM             = 16,
-  ksigE1LC            = 17,
-  ksigISUP            = 18,
-  ksigISUPPassive     = 19,
-
-  kcsFree     = 0x00,                // Channel is free for use
-  kcsIncoming = 0x01,                // Channel in incoming call
-  kcsOutgoing = 0x02,                // Channel in outgoing call
-  kcsFail     = 0x04                 // Channel fail
- */
-
+/*Autor Mario Felipe Raulino
+ Aplicativo em C e C++ para discador e gateway KHOMP*/
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -184,12 +159,10 @@ int main(int argc, char** argv) {
                 }
                 if (Controller::getInstance()->getDevice(DevDestino[devCall]) != NULL) {
                     
-                    if (Controller::getInstance()->getDevice(DevDestino[devCall])->getChannel((Controller::getInstance()->getDevice(DevDestino[devCall])->getChannelCount() - chama))->isFree())
-                        sleep(30);
+                    if (Controller::getInstance()->getDevice(DevDestino[devCall])->getChannel((Controller::getInstance()->getDevice(DevDestino[devCall])->getChannelCount() - chama))->isFree())                        
                         Controller::getInstance()->getDevice(DevDestino[devCall])->getChannel((Controller::getInstance()->getDevice(DevDestino[devCall])->getChannelCount() - chama))->makeCall();
                     totalChamSaida++;
-                    chama++;
-                    
+                    chama++;                    
                 }
             }
             call--;

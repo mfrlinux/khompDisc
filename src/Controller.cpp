@@ -47,7 +47,6 @@ Device* Controller::getDevice(int index) {
 }
 
 void Controller::addDeviceIn(Device* Dev) {
-
     listDeviceIn.push_back(Dev);
     addDevice(Dev);
 }
@@ -63,7 +62,6 @@ Device* Controller::getDeviceIn(int index) {
 }
 
 void Controller::addDeviceOut(Device* Dev) {
-
     listDeviceOut.push_back(Dev);
     addDevice(Dev);
     countDevicesOut++;

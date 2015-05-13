@@ -85,9 +85,7 @@ int Channel::getLocalDisc() {
     return calls;
 }
 
-
-
-
+//
 //COMANDOS
 //
 
@@ -106,12 +104,7 @@ void Channel::makeCall() {
         kg2BrTransfered = 10, // Transfered call.
 
     };
-
     int categoria = kg2BrOrdinary;
-
-
-
-
     if (isR2()) {
         sprintf(params, "dest_addr=\"%s\" orig_addr=\"%s\" r2_categ_a=\"%i\"", numeroB, numeroA, categoria);
     }
@@ -197,7 +190,6 @@ void Channel::connect(int param) {
  * @param cause
  */
 void Channel::disconnect(int cause) {
-
     if (cause == NULL) {
         sendCommand(CM_DISCONNECT, NULL);
         return;
@@ -249,16 +241,6 @@ void Channel::sendPlayB() {
     //sprintf(params, "%s/acobrar/00-acobrar.wav", dir);
     sendCommand(CM_PLAY_FROM_FILE, params);
 }
-
-//void Channel::sendPlayA() {    
-//
-//	sprintf(params, "%s/betinhoPCM16.wav",dir);
-//	sendCommand(CM_PLAY_FROM_FILE, params);
-//}
-//void Channel::sendPlayB() {
-//	sprintf(params, "%s/AloMarioA.kwf",dir);    
-//	sendCommand(CM_PLAY_FROM_FILE, params);
-//}
 
 void Channel::play() {
     if (isOutgoing()) {
@@ -322,8 +304,10 @@ void Channel::sendDisableHmpDetection() {
 void Channel::sendPreconnect () {
     sendCommand(CM_PRE_CONNECT, NULL);
 }
+
 //
 //Sinalização
+//
 
 KSignaling Channel::getSignaling() {
     return getChannelConfig().Signaling;
