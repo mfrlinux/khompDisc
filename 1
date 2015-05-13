@@ -1,0 +1,111 @@
+/*ksigInactive        = 0,
+  ksigR2Digital       = 1,
+  ksigContinuousEM    = 2,
+  ksigPulsedEM        = 3,
+  ksigUserR2Digital   = 4,
+  ksigAnalog          = 5,
+  ksigOpenCAS         = 6,
+  ksigOpenR2          = 7,
+  ksigSIP             = 8,
+  ksigOpenCCS         = 9,
+  ksigPRI_EndPoint    = 10,
+  ksigAnalogTerminal  = 11,
+  ksigPRI_Network     = 12,
+  ksigPRI_Passive     = 13,
+  ksigLineSide        = 14,
+  ksigCAS_EL7         = 15,
+  ksigGSM             = 16,
+  ksigE1LC            = 17,
+  ksigISUP            = 18,
+  ksigISUPPassive     = 19,*/
+char dtmf[255];
+#pragma GCC diagnostic ignored "-fpermissive"
+stt_code Kstdcall EventHandler(int32 Obj, K3L_EVENT *Event) {
+	int32 dev = Event->DeviceId;
+	k3lGetDeviceConfig(0, ksoChannel + (qtdChannels-1), &chanConfig, sizeof ( chanConfig));
+	switch (Event->Code) {
+		case EV_NEW_CALL:
+			char numeroA[KMAX_ADDRESS];
+			char numeroB[KMAX_ADDRESS];
+			char r2_categ[ 2 ];
+
+			k3lGetEventParam(Event, "dest_addr", numeroB, sizeof ( numeroB));
+			k3lGetEventParam(Event, "orig_addr", numeroA, sizeof ( numeroA));
+			k3lGetEventParam(Event, "r2_categ_a", r2_categ, 2);
+			
+			printf("Device[%d]Channel[%02d]: Ligação entrante - A: %s  |  B: %s\n", Event->DeviceId, Obj, numeroA, numeroB);
+			//k3lGetDeviceConfig(0, ksoChannel + qtdChannels, &chanConfig, sizeof ( chanConfig));
+			//Manda ringback com R2 
+
+			if (chanConfig.Signaling == ksigR2Digital) {
+				RingBack(dev, Obj);
+			}
+		//	CallAnalyser(dev, Obj);
+			Connect(dev, Obj);
+			break;
+
+		case EV_SEIZURE_START:
+		//	Cadencia(dev, Obj, 2);
+		//	PararCadencia(dev, Obj);
+			break;
+
+		case EV_CONNECT:
+			Cadencia(dev, Obj, 3);
+		/*	if (Obj < 29 ) {
+			Play(dev, Obj);
+			}
+			Play(dev,Obj);
+			//Teste FXO
+			           int resp;
+				    sleep(5);
+					Play(Obj, dev);
+			            puts("Digite o que quer fazer");
+				      puts("  1 - Desconexão FXS");
+				      scanf("%i",&resp);
+				      if(resp==1) {
+				      Cadencia(0,0,2);
+				      sleep(2);
+			              PararCadencia(0,0);/
+			}
+			puts("FINISH");
+			exit(1);*/
+			sendDTMF(dev, Obj, "2");
+			sleep (3);
+			sendDTMF(dev, Obj, "6");
+			break;
+
+		case EV_CALL_SUCCESS:
+			break;
+
+		case EV_DISCONNECT:
+			//      Cadencia(0,0,2);
+			break;
+
+		case EV_SEIZE_FAIL:
+			Disconect(dev, Obj);
+
+		case EV_CHANNEL_FREE:
+			printf("Device[%d]Channel[%02d]: Liberado\n",Event->DeviceId, Obj);
+			if (Obj < 30) {
+				if (chanConfig.Signaling == ksigR2Digital) {
+					Make_Call(0, dev, Obj);	
+				}
+				if (chanConfig.Signaling == ksigPRI_EndPoint) {
+					Make_Call(1, dev, Obj);	
+				}
+			}
+			PararCadencia(dev, Obj);
+			break;
+
+		case EV_DTMF_DETECTED:
+		    sprintf(dtmf, "%c",Event->AddInfo);
+		    Cadencia(dev, Obj, 2);
+		    break;	
+		case EV_END_OF_STREAM:
+		//	PararCadencia(dev, Obj);
+		/*        Cadencia(dev, Obj, 2);
+			StopRecord(dev,Obj);
+			Disconect(dev, Obj);*/
+			break;    
+	}
+}

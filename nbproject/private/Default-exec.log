@@ -1,0 +1,7 @@
+called: g++
+	/home/mfr/DiscadorC
+	g++
+	main.cpp
+	-o
+	main
+

@@ -1,0 +1,303 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#include <unistd.h>
+#include <iostream>
+#include <k3l.h>
+#include <k3lVersion.h>
+#include <k3lAudio.h>
+#include <KTypeDefs.h>
+#include <KDefs.h>
+#include <KStats.h>
+#include <cstdlib>
+#pragma GCC diagnostic ignored "-fpermissive"
+
+using namespace std;
+
+int StartAPI(bool aPrintOutput, int aMajor, int aMinor, int aBuild) {
+    sbyte *_result = k3lStart(aMajor, aMinor, aBuild);
+    if (_result) {
+        if (aPrintOutput) cout << "\n" << _result;
+        return 1; //error
+    }
+
+    if (aPrintOutput) cout << "Ok." << endl;
+    return 0;
+}
+
+int CountDevices() {
+    return k3lGetDeviceCount();
+}
+
+bool GetFreeChannel(int &DevId, int &Channel) {
+    for (int d = 0; d < k3lGetDeviceCount(); d++) {
+        K3L_DEVICE_CONFIG Cfg;
+
+        if (k3lGetDeviceConfig(d, ksoDevice + d, &Cfg, sizeof (Cfg)) != ksSuccess)
+            return false;
+
+        for (int c = 0; c < Cfg.ChannelCount; c++) {
+            K3L_CHANNEL_STATUS Stt;
+
+            if (k3lGetDeviceStatus(d, ksoChannel + c, &Stt, sizeof (Stt)) != ksSuccess)
+                return false;
+
+            if (Stt.CallStatus == kcsFree) {
+                DevId = d;
+                Channel = c;
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+int GetChannelCount() {
+    int Total = 0;
+
+    for (int d = 0; d < k3lGetDeviceCount(); d++) {
+        K3L_DEVICE_CONFIG Cfg;
+
+        if (k3lGetDeviceConfig(d, ksoDevice + d, &Cfg, sizeof (Cfg)) != ksSuccess) {
+            return -1;
+        }
+
+        Total += Cfg.ChannelCount;
+    }
+
+    return Total;
+}
+
+void sendDTMF(char dtmf[10]) {
+    K3L_COMMAND cmd;
+    cmd.Cmd = CM_DIAL_DTMF;
+    cmd.Object = 0;
+    int placa = 2;
+    //char dtmf[10] = dtmf;
+    cmd.Params = (byte*) dtmf;
+    k3lSendCommand(placa, &cmd);
+}
+
+void Cadencia (int placa, int channel, int type) {
+    char cadence[255];
+	if (type == 1) {
+	    sprintf(cadence, "cadence_times=\"1000,100, 200,4000\" mixer_track=\"0\" ");
+	}
+	if (type == 2) {
+	    sprintf(cadence, "cadence_times=\"250, 250\" mixer_track=\"0\" ");
+	}
+	if (type == 3) {
+	    sprintf(cadence, "cadence_times=\"1000, 90\" mixer_track=\"0\" ");
+	}
+
+    K3L_COMMAND cmd;
+    cmd.Cmd = CM_START_CADENCE;
+    cmd.Object = channel;
+    cmd.Params = cadence;
+    k3lSendCommand(placa, &cmd);
+}
+
+void PararCadencia (int placa, int channel) {
+    K3L_COMMAND cmd;
+    cmd.Cmd = CM_STOP_CADENCE;
+    cmd.Object = channel;
+    cmd.Params = NULL;
+    k3lSendCommand(placa, &cmd);
+}
+
+void Ocupacao() {
+    char numeroA[] = "1234"; // numero de origem
+    K3L_COMMAND cmd;
+    cmd.Cmd = CM_SEIZE;
+    cmd.Object = 0;
+    cmd.Params = (byte*) numeroA;
+    int placa = 0; // primeira placa
+    k3lSendCommand(placa, &cmd);
+}
+
+void Disconect(int32 chan) {
+    K3L_COMMAND cmd;
+    int placa = 0;
+    cmd.Cmd = CM_DISCONNECT;
+    cmd.Object = chan;
+    cmd.Params = NULL;
+    k3lSendCommand(placa, &cmd);
+}
+
+void CLEARSWITCH(int32 dev, int32 chan) {
+        bool en = true;
+	char params[ 255 ];
+	sprintf(params,"use_dsp\"%d\"",en);
+	K3L_COMMAND cmd;
+        cmd.Cmd = CM_CLEAR_SWITCH;
+        cmd.Object = chan;
+	cmd.Params = NULL;
+	k3lSendCommand(dev, &cmd);
+}
+
+void SWITCH(int32 dev, int32 chan) {
+        char params[ 255 ];
+	bool en = true;
+	sprintf(params, "device=\"%i\" channel=\"%i\" enable=\"%s\" use_dsp=\"%s\"", dev, chan, en, en); 
+	K3L_COMMAND cmd;
+	cmd.Cmd = CM_SWITCH;
+	cmd.Object = chan;
+	cmd.Params = (byte*) params;
+	k3lSendCommand(dev, &cmd);
+}
+void Make_Call(int sinal) {
+
+    enum {
+        kg2BrOrdinary = 1, // Subscriber without priority.
+        kg2BrPriority = 2, // Subscriber with priority.
+        kg2BrMaintenance = 3, // Maintenance equipment.
+        kg2BrLocalPayPhone = 4, // Local pay phone.
+        kg2BrTrunkOperator = 5, // Trunk operator.
+        kg2BrDataTrans = 6, // Data transmission.
+        kg2BrNonLocalPayPhone = 7, // Non-local pay phone.
+        kg2BrCollectCall = 8, // Collect call.
+        kg2BrOrdinaryInter = 9, // International ordinary subscriber.
+        kg2BrTransfered = 10, // Transfered call.
+
+    };
+
+    int categoria = kg2BrOrdinary;
+    char numeroA[] = "1234"; // numero de origem
+    char numeroB[] = "5678"; // numero de destino
+
+    // cria a ''string'' que erá enviada como parâmetro
+    char params[ 255 ];
+
+    if (sinal == 0) {
+        sprintf(params, "dest_addr=\"%s\" orig_addr=\"%s\" r2_categ_a=\"%i\"", numeroB, numeroA, categoria);
+    }
+    if (sinal == 1) {
+        sprintf(params, "dest_addr=\"%s\" orig_addr=\"%s\" ", numeroB, numeroA);
+    }
+    if (sinal == 2) {
+	PararCadencia(0,0);
+        int ringon = 1000;
+        int ringoff = 4000;
+        sprintf(params, "ring_on=\"%i\" ring_off=\"%i\"", ringon, ringoff);
+    }
+
+    K3L_COMMAND cmd;
+    cmd.Cmd = CM_MAKE_CALL;
+    cmd.Object = 0;
+    cmd.Params = (byte*) params;
+    int placa = 0;
+    k3lSendCommand(placa, &cmd);
+    Cadencia(0,0,2);
+	sleep(19);    
+Disconect(0);
+}
+stt_code Kstdcall EventHandler(int32 Obj, K3L_EVENT *Event) {
+    K3L_COMMAND cmd;
+     switch (Event->Code) {
+            //Identificação do hardware
+        case EV_NEW_CALL:
+            char numeroA[KMAX_ADDRESS];
+            char numeroB[KMAX_ADDRESS];
+            char r2_categ[ 2 ];
+
+            k3lGetEventParam(Event, "dest_addr", numeroB, sizeof ( numeroB));
+            k3lGetEventParam(Event, "orig_addr", numeroA, sizeof ( numeroA));
+            k3lGetEventParam(Event, "r2_categ_a", r2_categ, 2);
+            printf(
+                    "Placa[%d]Canal[%02d]: Ligação entrante - A: %s  |  B: %s\n", Event->DeviceId, Obj, numeroA, numeroB);
+            K3L_CHANNEL_CONFIG chanConfig;
+            k3lGetDeviceConfig(0, ksoChannel + 30, &chanConfig, sizeof ( chanConfig));
+            if (chanConfig.Signaling != ksigR2Digital) {
+                 cmd.Cmd = CM_RINGBACK;
+                 cmd.Object = 30;
+                 cmd.Params = NULL; //envia o comando de ringback,
+                 k3lSendCommand(Event->DeviceId, &cmd); //aceitando a ligação
+             }
+            cmd.Cmd = CM_CONNECT;
+            cmd.Object = Obj;
+            cmd.Params = NULL;
+            k3lSendCommand(Event->DeviceId, &cmd);
+            break;
+
+        case EV_SEIZURE_START:
+/*            cmd.Cmd = CM_PLAY;
+            cmd.Object = Obj;
+            char params[ 255 ];
+            sprintf(params, "file_name=\"%s\" offset=\"%i\" ", "/home/khomp/faxreceive.wav", 0);
+            cmd.Params = params;
+            k3lSendCommand(Event->DeviceId, &cmd);*/
+	    Cadencia(0,0,3);
+            break;
+
+        case EV_CONNECT:
+	   int resp;
+	/*
+            cmd.Cmd = CM_PLAY;
+            cmd.Object = Obj;
+            sprintf(params, "file_name=\"%s\" offset=\"%i\" ", "/home/khomp/faxreceive.wav", 0);
+            cmd.Params = params;*/
+	    
+	    PararCadencia(0,0);
+	    puts("Digite o que quer fazer");
+            puts("  1 - Desconexão FXS");
+	    scanf("%i",&resp);
+	    if(resp==1) {
+		Cadencia(0,0,2);
+		sleep(2);
+   		PararCadencia(0,0);
+	    }
+		puts("FINISH");
+		exit(1);
+	     return EXIT_SUCCESS;
+	case EV_CALL_SUCCESS:
+            cmd.Cmd = CM_PRE_CONNECT;
+            cmd.Object = Event->DeviceId;
+            cmd.Params = NULL;
+            k3lSendCommand(Event->DeviceId, &cmd);
+            break;
+        case EV_DISCONNECT:
+		Cadencia(0,0,3);
+            break;
+        case EV_SEIZE_FAIL:
+            Disconect(0);
+            Disconect(3);
+
+        case EV_CHANNEL_FREE:
+	    PararCadencia(0,0);
+	    exit(1);
+	    //cmd.Cmd = CM_STOP_PLAY;
+            //cmd.Object = Event->DeviceId;
+            //cmd.Params = NULL;
+            //k3lSendCommand(Event->DeviceId, &cmd);
+            break;
+	case EV_DTMF_DETECTED:
+	     Make_Call(2);
+	     CLEARSWITCH(0,1);
+    }
+}
+
+int main(int argc, char** argv) {
+    int placa = 0;
+    int canal = 0;
+    K3L_DEVICE_CONFIG Cfg;
+
+    StartAPI(true, 3, 2, 0);
+    cout << CountDevices() << " Device" << endl;
+    if (GetFreeChannel(placa, canal)) {
+        cout << "Livre" << endl;
+    }
+    cout << GetChannelCount() << " Canais Livres" << endl;
+    PararCadencia(0,0);
+    Make_Call(2);
+//    Cadencia(0,0,2);
+//    Ocupacao();
+//    sleep(10);
+    while (1) {
+        k3lRegisterEventHandler(EventHandler);
+    }
+    return 0;
+}
+
+

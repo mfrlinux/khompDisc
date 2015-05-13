@@ -1,0 +1,7 @@
+g++     main.cpp   -o main
+In file included from main.cpp:35:0:
+/usr/include/k3l.h: In function ‘void Connect(int, int)’:
+/usr/include/k3l.h:801:16: error:   initializing argument 1 of ‘int32 k3lSendCommand(int32, K3L_COMMAND*)’ [-fpermissive]
+/usr/include/k3l.h: In function ‘void PreConnect(int, int)’:
+/usr/include/k3l.h:801:16: error:   initializing argument 1 of ‘int32 k3lSendCommand(int32, K3L_COMMAND*)’ [-fpermissive]
+make: ** [main] Erro 1
