@@ -123,7 +123,7 @@ void Channel::makeCall() {
         //	sprintf(params, "dest_addr=\"%s\" orig_addr=\"%s\" network_dest_addr=\"%s\" voip_codecs=0,1 sip_transport_type=3 voip_audio_transport_type=3 sip_ice_stun_server=\"stun4.l.google.com:19302\" voip_rtcp_mux=\"10.5.29.50\"", numeroB, numeroA, toIP);
         //		sprintf(params, "dest_addr=\"%s\" orig_addr=\"%s\" network_dest_addr=\"%s\" voip_codecs=0,1 sip_transport_type=3 voip_audio_transport_type=3 sip_stun_server=\"stun4.l.google.com:19302\" voip_rtcp_mux=\"10.5.29.50\"", numeroB, numeroA, toIP);
         //
-        sprintf(params, "dest_addr=\"%s\" orig_addr=\"%s\" network_dest_addr=\"10.5.3.160\" voip_codecs=0,1 sip_transport_type=0 voip_audio_transport_type=0", numeroB, this->getOrigNumber());
+        sprintf(params, "dest_addr=\"%s\" orig_addr=\"%s\" network_dest_addr=\"10.5.3.21\" voip_codecs=0,1 sip_transport_type=0 voip_audio_transport_type=0", numeroB, this->getOrigNumber());
         //sprintf(params, "dest_addr=\"%s\" orig_addr=\"%s\" network_dest_addr=\"10.5.29.55\" voip_codecs=0,1 sip_transport_type=0 voip_audio_transport_type=0", numeroB, this->getOrigNumber());
     }
     sendCommand(CM_MAKE_CALL, params);
@@ -237,7 +237,7 @@ void Channel::sendPlayA() {
 
 void Channel::sendPlayB() {
     //sprintf(params, "%s/AloMarioA.kwf",dir);    
-    sprintf(params, "%s/audiosLuciano/silencio.wav",dir);    
+    sprintf(params, "%s/audiosLuciano/caixapostal300hz.wav",dir);    
     //sprintf(params, "%s/acobrar/00-acobrar.wav", dir);
     sendCommand(CM_PLAY_FROM_FILE, params);
 }
@@ -301,9 +301,15 @@ void Channel::sendDisableHmpDetection() {
     sendCommand(CM_HMP_DISABLE_DETECTION, NULL);
 }
 
-void Channel::sendPreconnect () {
+void Channel::sendPreconnect() {
     sendCommand(CM_PRE_CONNECT, NULL);
 }
+
+void Channel::sendHMPAnalyticsCommand() {
+    sendCommand(CM_ENABLE_HMP_ANALYTICS , NULL);
+    this->sendEnableHmpDetection();
+}
+
 
 //
 //Sinalização

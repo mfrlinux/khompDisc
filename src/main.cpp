@@ -157,9 +157,9 @@ int main(int argc, char** argv) {
                     chama=1;
                     printf("%d\n", devCall);
                 }
-                if (Controller::getInstance()->getDevice(DevDestino[devCall]) != NULL) {
-                    
+                if (Controller::getInstance()->getDevice(DevDestino[devCall]) != NULL) {                    
                     if (Controller::getInstance()->getDevice(DevDestino[devCall])->getChannel((Controller::getInstance()->getDevice(DevDestino[devCall])->getChannelCount() - chama))->isFree())                        
+                        //Controller::getInstance()->getDevice(DevDestino[devCall])->getChannel((Controller::getInstance()->getDevice(DevDestino[devCall])->getChannelCount() - chama))->sendHMPAnalyticsCommand();
                         Controller::getInstance()->getDevice(DevDestino[devCall])->getChannel((Controller::getInstance()->getDevice(DevDestino[devCall])->getChannelCount() - chama))->makeCall();
                     totalChamSaida++;
                     chama++;                    

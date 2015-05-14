@@ -124,6 +124,7 @@ public:
     void sendDisableAnswerInfo();
     void sendEnableHmpDetection();
     void sendDisableHmpDetection();
+    void sendHMPAnalyticsCommand();
     void sendPreconnect();
     int sendCommand(const int, char*);
     void setConference(Channel* conference);

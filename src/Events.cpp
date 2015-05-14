@@ -19,7 +19,12 @@ stt_code Kstdcall EventHandler(int32 channel, K3L_EVENT *Event) {
             break;
         case EV_CALL_SUCCESS:
             break;
-        case EV_NEW_CALL:            
+        case EV_NEW_CALL:
+            if (chan->isGSM()) {
+                chan->sendPreconnect();
+                chan->play();
+            }
+            
             if (chan->isSIP()) {
                 chan->sendPreconnect();
                 chan->play();
@@ -31,11 +36,15 @@ stt_code Kstdcall EventHandler(int32 channel, K3L_EVENT *Event) {
 
             if (chan->isISDN()) {
              //   chan->sendRingback(NULL);
-                chan->connect(NULL);
+                chan->sendPreconnect();
+                chan->play();
+                //chan->connect(NULL);
             }
             if (chan->isR2()) {
                 chan->sendRingback(NULL);
-                chan->connect(NULL);
+                chan->sendPreconnect();
+                chan->play();
+                //chan->connect(NULL);
             }
             break;
         case EV_CONNECT:
@@ -70,10 +79,8 @@ stt_code Kstdcall EventHandler(int32 channel, K3L_EVENT *Event) {
             chan->registerSip(toHost, toPortK3l);
             break;
         case EV_END_OF_STREAM:
-           if (chan->isIncoming()) {
-                sleep(4);
-                chan->disconnect(NULL);
-                
+           if (chan->isIncoming()) {                
+                chan->disconnect(NULL);                
             }
             break;
         case EV_DISCONNECT:            
