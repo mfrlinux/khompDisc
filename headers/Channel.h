@@ -1,6 +1,6 @@
 /* 
  * File:   Channel.h
- * Author: mfr
+ * Author: Mario Felipe Raulino
  *
  * Created on 27 de Janeiro de 2015, 16:12
  */
